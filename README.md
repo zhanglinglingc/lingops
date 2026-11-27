@@ -56,7 +56,7 @@ LingOps（灵控） 是一个专为 AWD/AWDP 攻防竞赛设计的竞赛自动�
 ### 1. 发行版本下载
 我们提供预编译的二进制包，您可以从 [GitHub Releases](https://github.com/zhanglinglingc/lingops/releases) 页面下载最新版本。
 
-**当前最新版本：v0.1.0**
+**当前最新版本：v0.2.0**
 
 | 操作系统 | 版本 | 下载 | 描述 |
 | :--- | :--- | :--- | :--- |
@@ -68,8 +68,43 @@ LingOps（灵控） 是一个专为 AWD/AWDP 攻防竞赛设计的竞赛自动�
 
 ### 2. 启动可执行文件
 
+> ⚠️ 必须在**解压后的目录内**启动。程序按「当前工作目录」查找 `configs/config.yaml`，在其它目录（例如用户主目录）直接运行二进制会报 `Failed to load config: failed to read config: Config File "config" Not Found in ...`。
+
+**macOS / Linux**
+
+```bash
+unzip LingOps_v0.2_darwin_arm64.zip     # 按实际下载的包名替换
+cd LingOps_v0.2_darwin_arm64
+chmod +x lingops-server
+./start.sh
+```
+
+`start.sh` 会先 `cd` 到脚本所在目录再启动 `lingops-server`，因此在哪个目录执行都不会出现配置文件找不到的问题。
+
+macOS 上从网络下载的包首次运行会被 Gatekeeper 拦截，先去掉隔离属性：
+
+```bash
+xattr -cr LingOps_v0.2_darwin_arm64
+```
+
+**Windows**
+
+解压后进入 `LingOps_v0.2_win64` 目录，双击 `start.bat`（或在 cmd 里执行 `start.bat`）。
+
+**修改端口 / 数据库**
+
+服务默认监听 `12800`，配置都在 `configs/config.yaml`：
+
+```yaml
+server:
+  port: 12800
+database:
+  type: "sqlite"
+  name: "data/lingops.db"
+```
+
 ### 3. 访问
-打开浏览器访问 `http://127.0.0.1:8080`
+打开浏览器访问 `http://127.0.0.1:12800`（端口以 `configs/config.yaml` 的 `server.port` 为准，不是 8080）
 
 **默认账号密码：**
 - 用户名：`admin`
@@ -77,6 +112,16 @@ LingOps（灵控） 是一个专为 AWD/AWDP 攻防竞赛设计的竞赛自动�
 - 密码：`admin123`
 
   
+
+## ❓ 常见问题
+
+| 现象 | 原因 | 处理 |
+| :--- | :--- | :--- |
+| `Failed to load config: failed to read config: Config File "config" Not Found in "[/Users/xxx/configs /Users/xxx /etc/lingops]"` | 没有在解压目录内启动。程序先找当前工作目录下的 `configs/config.yaml`，找不到才回退到 `~/configs`、`~`、`/etc/lingops` | `cd` 进解压目录后再启动，或直接用 `./start.sh` / `start.bat`（它们会自动切到脚本所在目录） |
+| macOS 提示「Apple 无法检查其是否包含恶意软件」 | 二进制未签名，被 Gatekeeper 隔离 | `xattr -cr <解压目录>`，或「系统设置 → 隐私与安全性 → 仍要打开」 |
+| 页面打不开 / 接口全部失败 | 访问的不是服务端口（默认 `12800`） | 访问 `http://127.0.0.1:12800`，端口以 `configs/config.yaml` 的 `server.port` 为准 |
+| 启动报 `address already in use` | 端口被占用 | 改 `configs/config.yaml` 的 `server.port`，或结束占用该端口的进程 |
+| 想清空数据重新开始 | 业务数据存在 SQLite | 停服务后删除 `data/lingops.db`，重启会自动重建空库 |
 
 ## 🔒 部分功能预览
 
